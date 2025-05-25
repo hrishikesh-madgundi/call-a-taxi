@@ -9,6 +9,9 @@ app.use(express.urlencoded({extended:true}))
 const cors = require('cors')
 app.use(cors());
 
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
+
 const connectToDb = require('./db/db');
 connectToDb();
 

@@ -10,6 +10,9 @@ This repository contains the backend API for the Call-a-Taxi app, built with Nod
 4. [API Endpoints](#api-endpoints)
 
    * [User Registration](#user-registration)
+   * [User Login](#user-login)
+   * [Get User Profile](#get-user-profile)
+   * [User Logout](#user-logout)
 5. [Error Handling](#error-handling)
 6. [Security](#security)
 
@@ -140,6 +143,111 @@ Register a new user account.
 
 ---
 
+### User Login
+
+Authenticate a user and return a JWT token.
+
+* **URL**: `/login`
+* **Method**: `POST`
+* **Content-Type**: `application/json`
+
+#### Request Body
+
+```json
+{
+  "email": "johndoe@example.com",
+  "password": "securePassword123"
+}
+```
+
+| Field      | Type   | Required | Description                  |
+| ---------- | ------ | -------- | ---------------------------- |
+| `email`    | String | Yes      | Must be a valid email address |
+| `password` | String | Yes      | Minimum 6 characters         |
+
+#### Success Response
+
+* **Status Code**: `200 OK`
+
+```json
+{
+  "token": "<jwt_token_here>",
+  "user": {
+    "_id": "<user_id>",
+    "fullname": {
+      "firstname": "John",
+      "lastname": "Doe"
+    },
+    "email": "johndoe@example.com",
+    "socketId": null,
+    "__v": 0
+  }
+}
+```
+
+#### Error Responses
+
+* **401 Unauthorized** – Invalid email or password
+
+```json
+{
+  "message": "Invalid email or password"
+}
+```
+
+---
+
+### Get User Profile
+
+Retrieve the profile of the authenticated user.
+
+* **URL**: `/profile`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer <jwt_token>`
+
+#### Success Response
+
+* **Status Code**: `200 OK`
+
+```json
+{
+  "_id": "<user_id>",
+  "fullname": {
+    "firstname": "John",
+    "lastname": "Doe"
+  },
+  "email": "johndoe@example.com",
+  "socketId": null,
+  "__v": 0
+}
+```
+
+#### Error Responses
+
+* **401 Unauthorized** – Missing or invalid token
+
+---
+
+### User Logout
+
+Log out the user by blacklisting the token.
+
+* **URL**: `/logout`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer <jwt_token>`
+
+#### Success Response
+
+* **Status Code**: `200 OK`
+
+```json
+{
+  "message": "Logged out successfully"
+}
+```
+
+---
+
 ## Error Handling
 
 All errors return a JSON response with either an `errors` array (for validation) or an `error` message (for server issues).
@@ -149,8 +257,20 @@ All errors return a JSON response with either an `errors` array (for validation)
 ## Security
 
 * Passwords are hashed with bcrypt before storage.
-* On successful registration, a JWT token is returned. Use this token in the `Authorization` header (`Bearer <token>`) for protected routes.
+* On successful registration and login, a JWT token is returned. Use this token in the `Authorization` header (`Bearer <token>`) for protected routes.
+* Tokens are blacklisted upon logout and expire after 24 hours.
 
 ---
 
-*Feel free to extend this README with additional endpoints and setup instructions as your project grows.*
+## Features Developed
+
+1. **User Registration**: Allows users to register with their first name, last name, email, and password.
+2. **User Login**: Authenticates users and provides a JWT token for session management.
+3. **Get User Profile**: Retrieves the profile of the authenticated user.
+4. **User Logout**: Logs out the user by blacklisting the token.
+5. **Token Blacklisting**: Ensures logged-out tokens cannot be reused.
+6. **Password Hashing**: Secures user passwords using bcrypt.
+7. **Validation**: Validates user input for registration and login using `express-validator`.
+8. **Authentication Middleware**: Protects routes by verifying JWT tokens.
+
+---
