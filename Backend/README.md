@@ -13,6 +13,8 @@ This repository contains the backend API for the Call-a-Taxi app, built with Nod
    * [User Login](#user-login)
    * [Get User Profile](#get-user-profile)
    * [User Logout](#user-logout)
+   * [Captain Registration](#captain-registration)
+   * [Captain Login](#captain-login)
 5. [Error Handling](#error-handling)
 6. [Security](#security)
 
@@ -143,11 +145,11 @@ Register a new user account.
 
 ---
 
-### User Login
+### Captain Registration
 
-Authenticate a user and return a JWT token.
+Register a new captain account.
 
-* **URL**: `/login`
+* **URL**: `/captain/register`
 * **Method**: `POST`
 * **Content-Type**: `application/json`
 
@@ -155,7 +157,73 @@ Authenticate a user and return a JWT token.
 
 ```json
 {
-  "email": "johndoe@example.com",
+  "fullname": {
+    "firstname": "Jane",
+    "lastname": "Smith"
+  },
+  "email": "janesmith@example.com",
+  "password": "securePassword123",
+  "vehicle": {
+    "color": "Red",
+    "plate": "ABC123",
+    "capacity": 4,
+    "vehicleType": "car"
+  }
+}
+```
+
+| Field                | Type   | Required | Description                                |
+| -------------------- | ------ | -------- | ------------------------------------------ |
+| `fullname.firstname` | String | Yes      | First name (min. 3 characters)             |
+| `fullname.lastname`  | String | No       | Last name (min. 3 characters, if provided) |
+| `email`              | String | Yes      | Must be a valid email address              |
+| `password`           | String | Yes      | Minimum 6 characters                       |
+| `vehicle.color`      | String | Yes      | Vehicle color (min. 3 characters)          |
+| `vehicle.plate`      | String | Yes      | Vehicle plate number (min. 3 characters)   |
+| `vehicle.capacity`   | Number | Yes      | Vehicle capacity (min. 1)                  |
+| `vehicle.vehicleType`| String | Yes      | Vehicle type (`car`, `motorcycle`, `auto`) |
+
+#### Success Response
+
+* **Status Code**: `201 Created`
+
+```json
+{
+  "token": "<jwt_token_here>",
+  "captain": {
+    "_id": "<captain_id>",
+    "fullname": {
+      "firstname": "Jane",
+      "lastname": "Smith"
+    },
+    "email": "janesmith@example.com",
+    "vehicle": {
+      "color": "Red",
+      "plate": "ABC123",
+      "capacity": 4,
+      "vehicleType": "car"
+    },
+    "status": "inactive",
+    "__v": 0
+  }
+}
+```
+
+---
+
+### Captain Login
+
+Authenticate a captain and return a JWT token.
+
+* **URL**: `/captain/login`
+* **Method**: `POST`
+* **Content-Type**: `application/json`
+
+#### Request Body
+
+```json
+{
+  "email": "janesmith@example.com",
   "password": "securePassword123"
 }
 ```
@@ -172,93 +240,24 @@ Authenticate a user and return a JWT token.
 ```json
 {
   "token": "<jwt_token_here>",
-  "user": {
-    "_id": "<user_id>",
+  "captain": {
+    "_id": "<captain_id>",
     "fullname": {
-      "firstname": "John",
-      "lastname": "Doe"
+      "firstname": "Jane",
+      "lastname": "Smith"
     },
-    "email": "johndoe@example.com",
-    "socketId": null,
+    "email": "janesmith@example.com",
+    "vehicle": {
+      "color": "Red",
+      "plate": "ABC123",
+      "capacity": 4,
+      "vehicleType": "car"
+    },
+    "status": "inactive",
     "__v": 0
   }
 }
 ```
-
-#### Error Responses
-
-* **401 Unauthorized** – Invalid email or password
-
-```json
-{
-  "message": "Invalid email or password"
-}
-```
-
----
-
-### Get User Profile
-
-Retrieve the profile of the authenticated user.
-
-* **URL**: `/profile`
-* **Method**: `GET`
-* **Headers**: `Authorization: Bearer <jwt_token>`
-
-#### Success Response
-
-* **Status Code**: `200 OK`
-
-```json
-{
-  "_id": "<user_id>",
-  "fullname": {
-    "firstname": "John",
-    "lastname": "Doe"
-  },
-  "email": "johndoe@example.com",
-  "socketId": null,
-  "__v": 0
-}
-```
-
-#### Error Responses
-
-* **401 Unauthorized** – Missing or invalid token
-
----
-
-### User Logout
-
-Log out the user by blacklisting the token.
-
-* **URL**: `/logout`
-* **Method**: `GET`
-* **Headers**: `Authorization: Bearer <jwt_token>`
-
-#### Success Response
-
-* **Status Code**: `200 OK`
-
-```json
-{
-  "message": "Logged out successfully"
-}
-```
-
----
-
-## Error Handling
-
-All errors return a JSON response with either an `errors` array (for validation) or an `error` message (for server issues).
-
----
-
-## Security
-
-* Passwords are hashed with bcrypt before storage.
-* On successful registration and login, a JWT token is returned. Use this token in the `Authorization` header (`Bearer <token>`) for protected routes.
-* Tokens are blacklisted upon logout and expire after 24 hours.
 
 ---
 
@@ -268,9 +267,11 @@ All errors return a JSON response with either an `errors` array (for validation)
 2. **User Login**: Authenticates users and provides a JWT token for session management.
 3. **Get User Profile**: Retrieves the profile of the authenticated user.
 4. **User Logout**: Logs out the user by blacklisting the token.
-5. **Token Blacklisting**: Ensures logged-out tokens cannot be reused.
-6. **Password Hashing**: Secures user passwords using bcrypt.
-7. **Validation**: Validates user input for registration and login using `express-validator`.
-8. **Authentication Middleware**: Protects routes by verifying JWT tokens.
+5. **Captain Registration**: Allows captains to register with their personal and vehicle details.
+6. **Captain Login**: Authenticates captains and provides a JWT token for session management.
+7. **Token Blacklisting**: Ensures logged-out tokens cannot be reused.
+8. **Password Hashing**: Secures user and captain passwords using bcrypt.
+9. **Validation**: Validates user and captain input for registration and login using `express-validator`.
+10. **Authentication Middleware**: Protects routes by verifying JWT tokens.
 
 ---
